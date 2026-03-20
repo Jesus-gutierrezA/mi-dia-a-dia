@@ -1078,40 +1078,156 @@ window.downloadReport = async () => {
   btn.innerHTML = '<span class="nav-icon">⏳</span> Generando...';
   btn.disabled = true;
 
-  // Make sure today panel is visible
+  // Switch to today panel
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-today').classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
   // Expand all collapsed categories
   document.querySelectorAll('.cat-card.collapsed').forEach(c => c.classList.remove('collapsed'));
 
-  await new Promise(r => setTimeout(r, 300));
+  // Wait for DOM to settle
+  await new Promise(r => setTimeout(r, 400));
 
   try {
-    const target = document.getElementById('panel-today');
-    const canvas = await html2canvas(target, {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const pct = calcScore(state.categories);
+    const goal = state.goal;
+    const total = state.categories.reduce((a,c)=>a+c.tasks.length,0);
+    const done  = state.categories.reduce((a,c)=>a+c.tasks.filter(t=>t.done).length,0);
+    const col = pct>=goal?'#3a9e6a':pct>=50?'#c8860a':'#c83232';
+    const statusTxt = pct>=goal?'✓ Meta alcanzada':pct>=50?'◐ En progreso':'○ Por comenzar';
+
+    // Build a self-contained off-screen div for perfect capture
+    const wrap = document.createElement('div');
+    wrap.style.cssText = `
+      position:fixed; left:-9999px; top:0;
+      width:860px; background:#f5f2ec;
+      font-family:'Instrument Sans',sans-serif;
+      padding:36px 40px 48px; box-sizing:border-box;
+    `;
+
+    // Header
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;';
+    hdr.innerHTML = `
+      <div>
+        <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:#0f0e0c;letter-spacing:-.5px">${dateStr}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a7568;margin-top:3px">DayFlow · Informe diario</div>
+      </div>
+      <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:#0f0e0c">Day<span style="color:#3a9e6a">Flow</span></div>`;
+    wrap.appendChild(hdr);
+
+    // Hero card
+    const hero = document.createElement('div');
+    hero.style.cssText = `
+      background:#0f0e0c; border-radius:16px;
+      padding:24px 28px; margin-bottom:20px; color:#fff;`;
+    hero.innerHTML = `
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div style="font-family:'Fraunces',serif;font-size:52px;font-weight:700;line-height:1;letter-spacing:-2px;color:${col}">${pct}%</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.5;margin-top:4px;letter-spacing:.06em">PROGRESO DEL DÍA</div>
+        </div>
+        <div style="padding:6px 14px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:${col};background:rgba(255,255,255,.1);margin-top:8px">${statusTxt}</div>
+      </div>
+      <div style="height:8px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-bottom:12px">
+        <div style="width:${pct}%;height:100%;background:${col};border-radius:4px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.45">
+        <span>${done} de ${total} tareas completadas</span>
+        <span>Meta: ${goal}%</span>
+      </div>`;
+    wrap.appendChild(hero);
+
+    // Category grid
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:14px;';
+
+    const CAT_COLORS_MAP = {
+      study:    {color:'#2a5fb0', light:'#e6eef9'},
+      health:   {color:'#1e7a50', light:'#e4f4ec'},
+      goals:    {color:'#6b35b8', light:'#ede6f8'},
+      personal: {color:'#b85a18', light:'#fdeee4'},
+    };
+
+    for(const cat of state.categories){
+      const cc = CAT_COLORS_MAP[cat.color] || CAT_COLORS_MAP.study;
+      const cp = catScore(cat);
+      const tw = cat.tasks.reduce((a,t)=>a+t.weight,0);
+
+      const card = document.createElement('div');
+      card.style.cssText = `
+        background:#faf8f4; border:1px solid #ddd8ce;
+        border-radius:14px; overflow:hidden;`;
+
+      // cat head
+      const head = document.createElement('div');
+      head.style.cssText = `
+        display:flex; align-items:center; gap:10px;
+        padding:12px 16px; border-bottom:1px solid #ddd8ce;
+        position:relative;`;
+      head.innerHTML = `
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${cc.color};border-radius:0 2px 2px 0"></div>
+        <span style="padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:${cc.color};background:${cc.light}">${cat.icon} ${cat.name}</span>
+        <span style="flex:1"></span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a7568">${tw}%</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a7568;margin-left:6px">${cp}%</span>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:#ddd8ce">
+          <div style="width:${cp}%;height:100%;background:${cc.color}"></div>
+        </div>`;
+      card.appendChild(head);
+
+      // tasks
+      for(const task of cat.tasks){
+        const row = document.createElement('div');
+        row.style.cssText = `
+          display:flex; align-items:center; gap:10px;
+          padding:9px 16px; border-bottom:1px solid #ddd8ce;
+          ${task.done?'background:#faf8f4':''}`;
+        const cbStyle = task.done
+          ? 'width:17px;height:17px;border-radius:4px;background:#3a9e6a;border:1.5px solid #3a9e6a;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:10px'
+          : 'width:17px;height:17px;border-radius:4px;background:#faf8f4;border:1.5px solid #cac4b8;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+        const nameStyle = task.done
+          ? 'font-size:13px;color:#b0aa9e;text-decoration:line-through;flex:1'
+          : 'font-size:13px;color:#0f0e0c;flex:1';
+        const badgeStyle = task.done
+          ? 'font-family:monospace;font-size:10px;padding:2px 7px;border-radius:10px;background:#d4eddf;color:#1e6b45;flex-shrink:0'
+          : 'font-family:monospace;font-size:10px;padding:2px 7px;border-radius:10px;background:#ede9e0;color:#7a7568;flex-shrink:0';
+        row.innerHTML = `
+          <div style="${cbStyle}">${task.done?'✓':''}</div>
+          <div style="${nameStyle}">${task.name}${task.note?`<div style="font-size:10px;color:#b0aa9e;font-style:italic;margin-top:1px">${task.note}</div>`:''}</div>
+          <span style="${badgeStyle}">${task.weight}%</span>`;
+        card.appendChild(row);
+      }
+      grid.appendChild(card);
+    }
+    wrap.appendChild(grid);
+
+    // Footer
+    const footer = document.createElement('div');
+    footer.style.cssText = 'margin-top:24px;text-align:center;font-family:"JetBrains Mono",monospace;font-size:10px;color:#b0aa9e';
+    footer.textContent = `Generado por DayFlow · ${new Date().toLocaleString('es-CO')}`;
+    wrap.appendChild(footer);
+
+    document.body.appendChild(wrap);
+    await new Promise(r => setTimeout(r, 200));
+
+    const canvas = await html2canvas(wrap, {
       backgroundColor: '#f5f2ec',
       scale: 2,
       useCORS: true,
       logging: false,
-      scrollX: 0,
-      scrollY: 0,
-      windowWidth: target.scrollWidth,
-      windowHeight: target.scrollHeight,
-      onclone: (doc) => {
-        const el = doc.getElementById('panel-today');
-        el.style.display = 'block';
-        el.style.maxWidth = 'none';
-        el.style.padding = '32px';
-        el.style.background = '#f5f2ec';
-      }
+      width: 860,
+      height: wrap.scrollHeight,
+      windowWidth: 860,
     });
 
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('es-CO', {year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
+    document.body.removeChild(wrap);
+
+    const fname = now.toLocaleDateString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
     const link = document.createElement('a');
-    link.download = `DayFlow_Informe_${dateStr}.png`;
+    link.download = `DayFlow_Informe_${fname}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
     toast('Informe descargado ✓');

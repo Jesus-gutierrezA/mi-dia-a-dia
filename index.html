@@ -481,6 +481,16 @@ body{
 }
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
+/* Download btn */
+#btn-download{
+  color:var(--green);font-weight:600;
+  border:1px solid var(--green-l);
+  background:var(--green-l);
+  margin-top:4px;
+}
+#btn-download:hover{background:var(--green-m)!important;color:#fff!important;border-color:var(--green-m)}
+#btn-download:disabled{opacity:.5;cursor:not-allowed}
+
 /* Colors */
 .c-green{color:var(--green)}
 .c-amber{color:var(--amber)}
@@ -530,6 +540,8 @@ body{
       <button class="nav-btn active" onclick="showPanel('today',this)"><span class="nav-icon">☀️</span> Hoy</button>
       <button class="nav-btn" onclick="showPanel('history',this)"><span class="nav-icon">📅</span> Historial</button>
       <button class="nav-btn" onclick="showPanel('stats',this)"><span class="nav-icon">📊</span> Estadísticas</button>
+      <div class="nav-lbl" style="margin-top:8px">Herramientas</div>
+      <button class="nav-btn" id="btn-download" onclick="downloadReport()"><span class="nav-icon">📥</span> Descargar informe</button>
     </nav>
     <div class="sb-goal">
       <div class="goal-row">
@@ -630,6 +642,8 @@ body{
 </div>
 
 <div class="toast-wrap" id="toast-wrap"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- FIREBASE -->
 <script type="module">
@@ -1056,6 +1070,59 @@ async function renderStats(){
     }).join('')||'<div style="color:var(--muted2);font-size:.8rem;padding:10px 0">Sin datos suficientes aún.</div>';
   }catch(e){ console.error(e); }
 }
+
+/* ── DOWNLOAD REPORT ── */
+window.downloadReport = async () => {
+  const btn = document.getElementById('btn-download');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<span class="nav-icon">⏳</span> Generando...';
+  btn.disabled = true;
+
+  // Make sure today panel is visible
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-today').classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  // Expand all collapsed categories
+  document.querySelectorAll('.cat-card.collapsed').forEach(c => c.classList.remove('collapsed'));
+
+  await new Promise(r => setTimeout(r, 300));
+
+  try {
+    const target = document.getElementById('panel-today');
+    const canvas = await html2canvas(target, {
+      backgroundColor: '#f5f2ec',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      scrollX: 0,
+      scrollY: 0,
+      windowWidth: target.scrollWidth,
+      windowHeight: target.scrollHeight,
+      onclone: (doc) => {
+        const el = doc.getElementById('panel-today');
+        el.style.display = 'block';
+        el.style.maxWidth = 'none';
+        el.style.padding = '32px';
+        el.style.background = '#f5f2ec';
+      }
+    });
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-CO', {year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
+    const link = document.createElement('a');
+    link.download = `DayFlow_Informe_${dateStr}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    toast('Informe descargado ✓');
+  } catch(e) {
+    toast('Error al generar el informe');
+    console.error(e);
+  }
+
+  btn.innerHTML = orig;
+  btn.disabled = false;
+};
 
 /* ── AUTH ── */
 window.loginGoogle=async()=>{

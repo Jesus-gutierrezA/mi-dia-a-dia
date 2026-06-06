@@ -36,6 +36,7 @@
   --health:    #1e7a50;  --health-l:#e4f4ec;  --health-d:#0f4a2e;
   --goals:     #6b35b8;  --goals-l: #ede6f8;  --goals-d: #3d1870;
   --personal:  #b85a18;  --personal-l:#fdeee4;--personal-d:#6e340e;
+  --home:      #0d7a82;  --home-l:  #ddf2f3;  --home-d:  #0a4a4f;
 
   --r: 14px;
   --sh: 0 1px 2px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.05);
@@ -185,8 +186,8 @@ body{
 .goal-fill{height:100%;border-radius:3px;transition:width .5s ease,background .3s}
 
 /* MAIN */
-.main{flex:1;overflow-y:auto;padding:0}
-.panel{display:none;padding:30px 32px;max-width:900px}
+.main{flex:1;overflow-y:auto;padding:0;display:flex;flex-direction:column;align-items:center}
+.panel{display:none;padding:34px 32px 60px;width:100%;max-width:860px;margin:0 auto}
 .panel.active{display:block}
 
 /* PAGE HEADER */
@@ -425,7 +426,8 @@ body{
 .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
 .stat-card{
   background:var(--card);border:1px solid var(--border);
-  border-radius:var(--r);padding:16px;box-shadow:var(--sh);
+  border-radius:var(--r);padding:18px 16px;box-shadow:var(--sh);
+  text-align:center;
 }
 .s-val{font-family:'Fraunces',serif;font-size:2rem;font-weight:700;line-height:1;margin-bottom:3px}
 .s-lbl{font-size:.68rem;color:var(--muted)}
@@ -436,12 +438,26 @@ body{
 .chart-card h3,.cat-avg-card h3{
   font-family:'Fraunces',serif;font-size:.95rem;font-weight:600;margin-bottom:16px;
 }
-.bar-chart{display:flex;align-items:flex-end;gap:8px;height:110px;padding-bottom:20px;position:relative}
-.bar-chart::after{content:'';position:absolute;bottom:20px;left:0;right:0;height:1px;background:var(--border)}
-.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;position:relative}
-.bc-bar{width:100%;border-radius:4px 4px 0 0;min-height:2px;max-height:90px}
-.bc-pct{font-size:.58rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-bottom:2px}
-.bc-lbl{font-size:.58rem;color:var(--muted2);font-family:'JetBrains Mono',monospace;margin-top:4px;text-align:center}
+.bar-chart{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:4px 2px 0;position:relative}
+.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
+.bc-track{
+  position:relative;width:100%;height:158px;
+  display:flex;align-items:flex-end;justify-content:center;
+  background:linear-gradient(to top,var(--border) 1px,transparent 1px);
+  background-size:100% 39.5px;
+  border-bottom:1.5px solid var(--border2);
+}
+.bc-bar{
+  width:58%;max-width:38px;border-radius:7px 7px 0 0;min-height:3px;
+  transition:height .7s cubic-bezier(.22,1,.36,1),background .3s;
+  box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+.bc-goal{position:absolute;left:0;right:0;height:0;border-top:1.5px dashed var(--amber-m);opacity:.45;z-index:1}
+.bc-pct{font-size:.64rem;font-weight:600;color:var(--ink2);font-family:'JetBrains Mono',monospace;height:14px;line-height:14px}
+.bc-lbl{font-size:.6rem;color:var(--muted2);font-family:'JetBrains Mono',monospace;text-align:center;line-height:1.25;text-transform:capitalize}
+.bc-lbl.today{color:var(--green);font-weight:700}
+.chart-legend{display:flex;align-items:center;gap:6px;font-size:.62rem;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:14px;justify-content:flex-end}
+.chart-legend .ln{width:18px;height:0;border-top:1.5px dashed var(--amber-m);opacity:.7}
 
 .cat-avg-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
 .cat-avg-row:last-child{border-bottom:none}
@@ -481,16 +497,6 @@ body{
 }
 @keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-/* Download btn */
-#btn-download{
-  color:var(--green);font-weight:600;
-  border:1px solid var(--green-l);
-  background:var(--green-l);
-  margin-top:4px;
-}
-#btn-download:hover{background:var(--green-m)!important;color:#fff!important;border-color:var(--green-m)}
-#btn-download:disabled{opacity:.5;cursor:not-allowed}
-
 /* Colors */
 .c-green{color:var(--green)}
 .c-amber{color:var(--amber)}
@@ -498,6 +504,23 @@ body{
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width:760px){
+  .cat-grid{grid-template-columns:1fr}
+  .panel{padding:22px 16px 50px}
+  .sidebar{width:74px}
+  .sb-logo,.user-name,.nav-btn span:not(.nav-icon),.nav-lbl,.sb-goal{display:none}
+  .nav-btn{justify-content:center;padding:11px 0}
+  .nav-icon{font-size:1.1rem}
+  .user-pill{justify-content:center;padding:8px 4px;margin:12px 8px 4px}
+  .btn-logout{display:none}
+  .hero-left .big-pct{font-size:3rem}
+}
+@media (max-width:460px){
+  .stats-grid{grid-template-columns:1fr;gap:10px}
+  .bc-track{height:130px;background-size:100% 32.5px}
+}
 </style>
 </head>
 <body>
@@ -540,8 +563,6 @@ body{
       <button class="nav-btn active" onclick="showPanel('today',this)"><span class="nav-icon">☀️</span> Hoy</button>
       <button class="nav-btn" onclick="showPanel('history',this)"><span class="nav-icon">📅</span> Historial</button>
       <button class="nav-btn" onclick="showPanel('stats',this)"><span class="nav-icon">📊</span> Estadísticas</button>
-      <div class="nav-lbl" style="margin-top:8px">Herramientas</div>
-      <button class="nav-btn" id="btn-download" onclick="downloadReport()"><span class="nav-icon">📥</span> Descargar informe</button>
     </nav>
     <div class="sb-goal">
       <div class="goal-row">
@@ -594,7 +615,7 @@ body{
     <div class="panel" id="panel-stats">
       <div class="page-hdr"><h2>Estadísticas</h2><div class="sub">Últimos 7 días</div></div>
       <div class="stats-grid" id="stats-grid"></div>
-      <div class="chart-card"><h3>Progreso semanal</h3><div class="bar-chart" id="week-chart"></div></div>
+      <div class="chart-card"><h3>Progreso semanal</h3><div class="bar-chart" id="week-chart"></div><div class="chart-legend"><span class="ln"></span> Meta diaria</div></div>
       <div class="cat-avg-card"><h3>Promedio por categoría</h3><div id="cat-avg-list"></div></div>
     </div>
   </main>
@@ -632,6 +653,7 @@ body{
         <option value="health">Verde</option>
         <option value="goals">Violeta</option>
         <option value="personal">Naranja</option>
+        <option value="home">Turquesa</option>
       </select>
     </div>
     <div class="m-acts">
@@ -642,8 +664,6 @@ body{
 </div>
 
 <div class="toast-wrap" id="toast-wrap"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- FIREBASE -->
 <script type="module">
@@ -671,7 +691,13 @@ const CAT_STYLES = {
   health:   { color:'var(--health)',   light:'var(--health-l)',   dark:'var(--health-d)' },
   goals:    { color:'var(--goals)',    light:'var(--goals-l)',    dark:'var(--goals-d)' },
   personal: { color:'var(--personal)', light:'var(--personal-l)', dark:'var(--personal-d)' },
+  home:     { color:'var(--home)',     light:'var(--home-l)',     dark:'var(--home-d)' },
 };
+
+/* ── SCHEMA VERSION ── */
+/* Subir este número fuerza a regenerar SOLO el día actual con las nuevas
+   categorías (los días pasados del historial se conservan intactos). */
+const SCHEMA_VERSION = 2;
 
 /* ── DEFAULT CATEGORIES (tus categorías exactas) ── */
 const DEFAULT_CATS = [
@@ -686,32 +712,48 @@ const DEFAULT_CATS = [
   {
     id:'health', icon:'💪', name:'Salud', color:'health',
     tasks:[
-      {id:'h1', name:'Ejercicio físico',  weight:20, note:'mínimo 1 hora', done:false},
-      {id:'h2', name:'Dormir (6–8 horas)',weight:13, note:'', done:false},
+      {id:'h1', name:'Gym o ejercicio físico',              weight:15, note:'Mínimo 1 hora', done:false},
+      {id:'h2', name:'Dormir 7–8 horas',                    weight:10, note:'', done:false},
+      {id:'h3', name:'Hidratación y alimentación adecuada', weight:5,  note:'Cumplir meta de agua · evitar comida chatarra', done:false},
     ]
   },
   {
-    id:'goals', icon:'🧠', name:'Metas', color:'goals',
+    id:'home', icon:'🏠', name:'Hogar y Organización', color:'home',
     tasks:[
-      {id:'g1', name:'Estudiar inglés', weight:20, note:'mínimo 30 minutos', done:false},
+      {id:'ho1', name:'Aseo general o tarea doméstica',          weight:5, note:'', done:false},
+      {id:'ho2', name:'Organización de habitación/escritorio',   weight:5, note:'', done:false},
+      {id:'ho3', name:'Planificar el día siguiente',             weight:5, note:'', done:false},
     ]
   },
   {
-    id:'personal', icon:'👤', name:'Personal', color:'personal',
+    id:'growth', icon:'🚀', name:'Crecimiento Personal', color:'goals',
     tasks:[
-      {id:'p1', name:'Tiempo con familia',        weight:5, note:'', done:false},
-      {id:'p2', name:'Hobby o descanso activo',   weight:3, note:'', done:false},
-      {id:'p3', name:'Planificar el día siguiente',weight:4, note:'', done:false},
-      {id:'p4', name:'Organización / orden',      weight:5, note:'', done:false},
+      {id:'gr1', name:'Inglés',                                 weight:5, note:'', done:false},
+      {id:'gr2', name:'Lectura',                                weight:5, note:'20 a 30 minutos', done:false},
+      {id:'gr3', name:'Aprender algo nuevo fuera de la carrera',weight:5, note:'Finanzas · emprendimiento · IA · comunicación', done:false},
+    ]
+  },
+  {
+    id:'wellbeing', icon:'👨‍👩‍👦', name:'Bienestar Personal', color:'personal',
+    tasks:[
+      {id:'wb1', name:'Tiempo con familia',                weight:4, note:'', done:false},
+      {id:'wb2', name:'Hobby o descanso activo',           weight:3, note:'', done:false},
+      {id:'wb3', name:'Salir a caminar o tomar aire libre',weight:3, note:'', done:false},
     ]
   },
 ];
 
 /* ── STATE ── */
-let me = null, state = null, editTarget = null, saveTimer = null;
+let me = null, state = null, editTarget = null, saveTimer = null, rollingOver = false;
 
 /* ── UTILS ── */
-const todayStr = () => new Date().toISOString().slice(0,10);
+/* Fecha LOCAL (no UTC). En Colombia (UTC-5) toISOString() adelantaba el día
+   después de las 7pm, por eso "no se actualizaba bien". Ahora el día va de
+   00:00 a 23:59 hora local. */
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
 const fmtDate  = str => { const [y,m,d]=str.split('-'); return new Date(y,m-1,d).toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'}); };
 const fmtShort = str => { const [y,m,d]=str.split('-'); return new Date(y,m-1,d).toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short'}); };
 
@@ -748,11 +790,22 @@ async function saveState(){
   saveTimer=setTimeout(async()=>{
     try{
       const pct=calcScore(state.categories);
-      await setDoc(dayRef(state.date),{...state, pct, updatedAt:Date.now()});
+      await setDoc(dayRef(state.date),{...state, schemaVersion:SCHEMA_VERSION, pct, updatedAt:Date.now()});
       await setDoc(userRef(),{goal:state.goal},{merge:true});
       setSyncDot('');
     }catch(e){ setSyncDot('err'); toast('Error al sincronizar'); }
   },600);
+}
+
+/* Guarda de inmediato (sin debounce). Se usa al cambiar de día. */
+async function flushSave(){
+  if(!me||!state) return;
+  clearTimeout(saveTimer);
+  try{
+    const pct=calcScore(state.categories);
+    await setDoc(dayRef(state.date),{...state, schemaVersion:SCHEMA_VERSION, pct, updatedAt:Date.now()});
+    setSyncDot('');
+  }catch(e){ setSyncDot('err'); }
 }
 
 async function loadToday(){
@@ -760,13 +813,54 @@ async function loadToday(){
   try{
     const [snap,uSnap]=await Promise.all([getDoc(dayRef(today)),getDoc(userRef())]);
     const goal=uSnap.exists()?(uSnap.data().goal||80):80;
-    if(snap.exists()){ state={...snap.data(),goal}; }
-    else{ state={date:today,goal,categories:JSON.parse(JSON.stringify(DEFAULT_CATS))}; await saveState(); }
+    if(snap.exists() && (snap.data().schemaVersion||0) >= SCHEMA_VERSION){
+      state={...snap.data(),goal};
+    }else{
+      // Día nuevo, o día actual con estructura vieja → se regenera con las
+      // categorías nuevas. Los días pasados del historial NO se tocan.
+      state={date:today,goal,schemaVersion:SCHEMA_VERSION,categories:JSON.parse(JSON.stringify(DEFAULT_CATS))};
+      await saveState();
+    }
     document.getElementById('goal-inp').value=state.goal;
   }catch(e){
-    state={date:todayStr(),goal:80,categories:JSON.parse(JSON.stringify(DEFAULT_CATS))};
+    state={date:todayStr(),goal:80,schemaVersion:SCHEMA_VERSION,categories:JSON.parse(JSON.stringify(DEFAULT_CATS))};
     setSyncDot('err');
   }
+}
+
+/* ── ROLLOVER DE MEDIANOCHE ──
+   Si la app queda abierta y pasa la medianoche local, cierra el día anterior
+   (lo guarda) y arranca el día nuevo automáticamente. */
+function updateDateHeader(){
+  const now=new Date();
+  document.getElementById('today-title').textContent=
+    now.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('today-sub').textContent=
+    now.getFullYear()+' · Día '+Math.ceil((now-new Date(now.getFullYear(),0,1))/86400000)+' del año';
+}
+
+async function checkRollover(){
+  if(!me||!state||rollingOver) return;
+  if(todayStr()===state.date) return;
+  rollingOver=true;
+  try{
+    await flushSave();          // asegura el cierre del día anterior
+    await loadToday();          // carga (o crea) el día nuevo
+    updateDateHeader();
+    renderCategories();
+    const active=document.querySelector('.panel.active')?.id;
+    if(active==='panel-stats')   renderStats();
+    if(active==='panel-history') renderHistory();
+    toast('🌅 Nuevo día iniciado');
+  }finally{ rollingOver=false; }
+}
+
+/* Bloquea registrar progreso en un día que ya terminó. Devuelve true si
+   todavía es el mismo día (se puede editar). */
+function guardDay(){
+  if(!state) return false;
+  if(todayStr()!==state.date){ checkRollover(); return false; }
+  return true;
 }
 
 /* ── RENDER TODAY ── */
@@ -865,6 +959,7 @@ function updateCatHead(catId){
 
 /* ── TASK ACTIONS ── */
 window._toggle=(catId,taskId)=>{
+  if(!guardDay()) return;
   const cat=state.categories.find(c=>c.id===catId);
   const task=cat.tasks.find(t=>t.id===taskId);
   task.done=!task.done;
@@ -884,6 +979,7 @@ window._toggleAdd=id=>{
 };
 
 window._addTask=catId=>{
+  if(!guardDay()) return;
   const nEl=document.getElementById(`an-${catId}`);
   const wEl=document.getElementById(`aw-${catId}`);
   const noteEl=document.getElementById(`anote-${catId}`);
@@ -1038,13 +1134,28 @@ async function renderStats(){
 
     const chart=document.getElementById('week-chart'); chart.innerHTML='';
     const filled=entries.length<7?[...Array(7-entries.length).fill(null),...entries]:entries;
+    const goal=Math.min(state.goal,100);
     filled.forEach(e=>{
-      const pct=e?e.pct:0; const col=e?scoreColor(pct,state.goal):'var(--border2)';
-      const lbl=e?fmtShort(e.date).split(' ').slice(0,2).join(' '):'—';
+      const has=!!e;
+      const pct=has?Math.max(0,Math.min(e.pct,100)):0;
+      const col=has?scoreColor(e.pct,state.goal):'var(--border2)';
+      const isToday=has&&e.date===state.date;
+      let lbl='—';
+      if(has){
+        const dt=new Date(e.date+'T00:00:00');
+        const wd=dt.toLocaleDateString('es-CO',{weekday:'short'}).replace('.','');
+        const day=dt.getDate();
+        const mon=dt.toLocaleDateString('es-CO',{month:'short'}).replace('.','');
+        lbl=isToday?'Hoy':`${wd}<br>${day} ${mon}`;
+      }
       const col2=document.createElement('div'); col2.className='bc-col';
-      col2.innerHTML=`${e&&pct>0?`<div class="bc-pct">${pct}%</div>`:'<div style="height:14px"></div>'}
-        <div class="bc-bar" style="width:100%;height:${Math.min(pct,100)}%;background:${col};transition:height .6s"></div>
-        <div class="bc-lbl">${lbl}</div>`;
+      col2.innerHTML=`
+        <div class="bc-pct">${has?pct+'%':''}</div>
+        <div class="bc-track">
+          <div class="bc-goal" style="bottom:${goal}%"></div>
+          <div class="bc-bar" style="height:${pct}%;background:${col}"></div>
+        </div>
+        <div class="bc-lbl${isToday?' today':''}">${lbl}</div>`;
       chart.appendChild(col2);
     });
 
@@ -1071,175 +1182,6 @@ async function renderStats(){
   }catch(e){ console.error(e); }
 }
 
-/* ── DOWNLOAD REPORT ── */
-window.downloadReport = async () => {
-  const btn = document.getElementById('btn-download');
-  const orig = btn.innerHTML;
-  btn.innerHTML = '<span class="nav-icon">⏳</span> Generando...';
-  btn.disabled = true;
-
-  // Switch to today panel
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-today').classList.add('active');
-
-  // Expand all collapsed categories
-  document.querySelectorAll('.cat-card.collapsed').forEach(c => c.classList.remove('collapsed'));
-
-  // Wait for DOM to settle
-  await new Promise(r => setTimeout(r, 400));
-
-  try {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    const pct = calcScore(state.categories);
-    const goal = state.goal;
-    const total = state.categories.reduce((a,c)=>a+c.tasks.length,0);
-    const done  = state.categories.reduce((a,c)=>a+c.tasks.filter(t=>t.done).length,0);
-    const col = pct>=goal?'#3a9e6a':pct>=50?'#c8860a':'#c83232';
-    const statusTxt = pct>=goal?'✓ Meta alcanzada':pct>=50?'◐ En progreso':'○ Por comenzar';
-
-    // Build a self-contained off-screen div for perfect capture
-    const wrap = document.createElement('div');
-    wrap.style.cssText = `
-      position:fixed; left:-9999px; top:0;
-      width:860px; background:#f5f2ec;
-      font-family:'Instrument Sans',sans-serif;
-      padding:36px 40px 48px; box-sizing:border-box;
-    `;
-
-    // Header
-    const hdr = document.createElement('div');
-    hdr.style.cssText = 'margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;';
-    hdr.innerHTML = `
-      <div>
-        <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:#0f0e0c;letter-spacing:-.5px">${dateStr}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a7568;margin-top:3px">DayFlow · Informe diario</div>
-      </div>
-      <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:#0f0e0c">Day<span style="color:#3a9e6a">Flow</span></div>`;
-    wrap.appendChild(hdr);
-
-    // Hero card
-    const hero = document.createElement('div');
-    hero.style.cssText = `
-      background:#0f0e0c; border-radius:16px;
-      padding:24px 28px; margin-bottom:20px; color:#fff;`;
-    hero.innerHTML = `
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
-        <div>
-          <div style="font-family:'Fraunces',serif;font-size:52px;font-weight:700;line-height:1;letter-spacing:-2px;color:${col}">${pct}%</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.5;margin-top:4px;letter-spacing:.06em">PROGRESO DEL DÍA</div>
-        </div>
-        <div style="padding:6px 14px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:${col};background:rgba(255,255,255,.1);margin-top:8px">${statusTxt}</div>
-      </div>
-      <div style="height:8px;background:rgba(255,255,255,.12);border-radius:4px;overflow:hidden;margin-bottom:12px">
-        <div style="width:${pct}%;height:100%;background:${col};border-radius:4px"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.45">
-        <span>${done} de ${total} tareas completadas</span>
-        <span>Meta: ${goal}%</span>
-      </div>`;
-    wrap.appendChild(hero);
-
-    // Category grid
-    const grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:14px;';
-
-    const CAT_COLORS_MAP = {
-      study:    {color:'#2a5fb0', light:'#e6eef9'},
-      health:   {color:'#1e7a50', light:'#e4f4ec'},
-      goals:    {color:'#6b35b8', light:'#ede6f8'},
-      personal: {color:'#b85a18', light:'#fdeee4'},
-    };
-
-    for(const cat of state.categories){
-      const cc = CAT_COLORS_MAP[cat.color] || CAT_COLORS_MAP.study;
-      const cp = catScore(cat);
-      const tw = cat.tasks.reduce((a,t)=>a+t.weight,0);
-
-      const card = document.createElement('div');
-      card.style.cssText = `
-        background:#faf8f4; border:1px solid #ddd8ce;
-        border-radius:14px; overflow:hidden;`;
-
-      // cat head
-      const head = document.createElement('div');
-      head.style.cssText = `
-        display:flex; align-items:center; gap:10px;
-        padding:12px 16px; border-bottom:1px solid #ddd8ce;
-        position:relative;`;
-      head.innerHTML = `
-        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${cc.color};border-radius:0 2px 2px 0"></div>
-        <span style="padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:${cc.color};background:${cc.light}">${cat.icon} ${cat.name}</span>
-        <span style="flex:1"></span>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a7568">${tw}%</span>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a7568;margin-left:6px">${cp}%</span>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:2px;background:#ddd8ce">
-          <div style="width:${cp}%;height:100%;background:${cc.color}"></div>
-        </div>`;
-      card.appendChild(head);
-
-      // tasks
-      for(const task of cat.tasks){
-        const row = document.createElement('div');
-        row.style.cssText = `
-          display:flex; align-items:center; gap:10px;
-          padding:9px 16px; border-bottom:1px solid #ddd8ce;
-          ${task.done?'background:#faf8f4':''}`;
-        const cbStyle = task.done
-          ? 'width:17px;height:17px;border-radius:4px;background:#3a9e6a;border:1.5px solid #3a9e6a;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:10px'
-          : 'width:17px;height:17px;border-radius:4px;background:#faf8f4;border:1.5px solid #cac4b8;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-        const nameStyle = task.done
-          ? 'font-size:13px;color:#b0aa9e;text-decoration:line-through;flex:1'
-          : 'font-size:13px;color:#0f0e0c;flex:1';
-        const badgeStyle = task.done
-          ? 'font-family:monospace;font-size:10px;padding:2px 7px;border-radius:10px;background:#d4eddf;color:#1e6b45;flex-shrink:0'
-          : 'font-family:monospace;font-size:10px;padding:2px 7px;border-radius:10px;background:#ede9e0;color:#7a7568;flex-shrink:0';
-        row.innerHTML = `
-          <div style="${cbStyle}">${task.done?'✓':''}</div>
-          <div style="${nameStyle}">${task.name}${task.note?`<div style="font-size:10px;color:#b0aa9e;font-style:italic;margin-top:1px">${task.note}</div>`:''}</div>
-          <span style="${badgeStyle}">${task.weight}%</span>`;
-        card.appendChild(row);
-      }
-      grid.appendChild(card);
-    }
-    wrap.appendChild(grid);
-
-    // Footer
-    const footer = document.createElement('div');
-    footer.style.cssText = 'margin-top:24px;text-align:center;font-family:"JetBrains Mono",monospace;font-size:10px;color:#b0aa9e';
-    footer.textContent = `Generado por DayFlow · ${new Date().toLocaleString('es-CO')}`;
-    wrap.appendChild(footer);
-
-    document.body.appendChild(wrap);
-    await new Promise(r => setTimeout(r, 200));
-
-    const canvas = await html2canvas(wrap, {
-      backgroundColor: '#f5f2ec',
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      width: 860,
-      height: wrap.scrollHeight,
-      windowWidth: 860,
-    });
-
-    document.body.removeChild(wrap);
-
-    const fname = now.toLocaleDateString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
-    const link = document.createElement('a');
-    link.download = `DayFlow_Informe_${fname}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    toast('Informe descargado ✓');
-  } catch(e) {
-    toast('Error al generar el informe');
-    console.error(e);
-  }
-
-  btn.innerHTML = orig;
-  btn.disabled = false;
-};
-
 /* ── AUTH ── */
 window.loginGoogle=async()=>{
   try{ await signInWithPopup(auth,new GoogleAuthProvider()); }
@@ -1259,14 +1201,15 @@ onAuthStateChanged(auth,async user=>{
     document.getElementById('user-name').textContent=user.displayName||user.email;
     if(user.photoURL) document.getElementById('user-avatar').src=user.photoURL;
 
-    const now=new Date();
-    document.getElementById('today-title').textContent=
-      now.toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
-    document.getElementById('today-sub').textContent=
-      now.getFullYear()+' · Día '+Math.ceil((now-new Date(now.getFullYear(),0,1))/86400000)+' del año';
+    updateDateHeader();
 
     await loadToday();
     renderCategories();
+
+    /* Rollover automático: revisa cada 30s y al volver a la pestaña. */
+    setInterval(checkRollover,30000);
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkRollover(); });
+    window.addEventListener('focus',checkRollover);
 
     document.addEventListener('keydown',e=>{
       if(e.key==='Escape'){

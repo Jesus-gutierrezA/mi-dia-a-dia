@@ -349,6 +349,19 @@ body{
 .task-btn:hover{background:var(--bg2);color:var(--ink)}
 .task-btn.del:hover{background:var(--red-l);color:var(--red)}
 
+/* Botón "marcar toda la categoría" */
+.cat-allbtn{
+  width:auto;height:24px;padding:0 9px;border-radius:7px;
+  border:1px solid var(--border2);
+  background:transparent;cursor:pointer;
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.6rem;font-weight:600;letter-spacing:.03em;
+  color:var(--muted);transition:all .15s;flex-shrink:0;
+}
+.cat-allbtn:hover{background:var(--cat-c);color:#fff;border-color:var(--cat-c)}
+.cat-card.alldone .cat-allbtn{background:var(--cat-c);color:#fff;border-color:var(--cat-c)}
+
 /* ADD FORM */
 .add-area{padding:8px 14px 12px}
 .add-toggle{
@@ -908,6 +921,7 @@ function renderCategories(){
         <span class="cat-weight">${tw}%</span>
         <span class="cat-pct-badge" id="catpct-${cat.id}">${cp}%</span>
         <span class="cat-chevron">▾</span>
+        <button class="cat-allbtn" title="Marcar / desmarcar toda la categoría" onclick="event.stopPropagation();window._toggleCatAll('${cat.id}')">✓ Todo</button>
         <button class="task-btn del" style="opacity:1;margin-left:2px" onclick="event.stopPropagation();window._deleteCat('${cat.id}')">✕</button>
         <div class="cat-mini-bar"><div class="cat-mini-fill" id="catbar-${cat.id}" style="width:${cp}%;background:${cs.color}"></div></div>
       </div>
@@ -930,6 +944,7 @@ function renderCategories(){
       </div>`;
     body.appendChild(aa);
     grid.appendChild(card);
+    updateCatHead(cat.id);
   });
   updateHero();
 }
@@ -959,6 +974,8 @@ function updateCatHead(catId){
   const bar=document.getElementById(`catbar-${catId}`);
   if(el) el.textContent=cp+'%';
   if(bar) bar.style.width=cp+'%';
+  const card=document.getElementById(`cat-${catId}`);
+  if(card) card.classList.toggle('alldone', cat.tasks.length>0 && cat.tasks.every(t=>t.done));
 }
 
 /* ── TASK ACTIONS ── */
@@ -976,6 +993,24 @@ window._toggle=(catId,taskId)=>{
 };
 
 window._toggleCat=id=>document.getElementById(`cat-${id}`)?.classList.toggle('collapsed');
+
+/* Marca toda la categoría: si ya está todo hecho, lo desmarca; si no, marca todo. */
+window._toggleCatAll=catId=>{
+  if(!guardDay()) return;
+  const cat=state.categories.find(c=>c.id===catId);
+  if(!cat||!cat.tasks.length) return;
+  const target=!cat.tasks.every(t=>t.done);
+  cat.tasks.forEach(t=>{
+    t.done=target;
+    const row=document.getElementById(`task-${t.id}`);
+    if(row){
+      const cb=row.querySelector('.task-cb');
+      if(target){row.classList.add('done'); if(cb) cb.textContent='✓';}
+      else{row.classList.remove('done'); if(cb) cb.textContent='';}
+    }
+  });
+  updateHero(); updateCatHead(catId); saveState();
+};
 window._toggleAdd=id=>{
   const f=document.getElementById(`af-${id}`);
   f.classList.toggle('open');
